@@ -1,0 +1,116 @@
+package api;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import problem.Problem;
+import problem.ProblemDAO;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class CompliServlet extends HttpServlet {
+    private Gson gson = new GsonBuilder().create();
+    //创建两个辅助的类
+    //这个类用于辅助解析body中的数据请求
+    static class CompileRequest{
+        private int id;
+        private String code;
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+    }
+
+    //这个类用于辅助构造最终响应的body数据
+    static class CompileResponse{
+        private int ok;
+        private String reason;
+
+        public int getOk() {
+            return ok;
+        }
+
+        public void setOk(int ok) {
+            this.ok = ok;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
+
+        public String getStdout() {
+            return stdout;
+        }
+
+        public void setStdout(String stdout) {
+            this.stdout = stdout;
+        }
+
+        private String stdout;
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        //1.读取请求的body的所有数据
+        String body = readBody(req);
+        //2.按照API约定的格式来解析JSON数据，得到compileRequest对象
+        CompileRequest compileRequest = gson.fromJson(body,CompileRequest.class);
+        //3.按照id从数据库中读取响应的测试用例代码
+        ProblemDAO problemDAO = new ProblemDAO();
+        Problem problem = problemDAO.selectOne(compileRequest.getId());
+        String testCode = problem.getTestCode();//得到该题目的测试代码
+        String requestCode = compileRequest.getCode();//得到改题目的用户输入的代码
+        //4.把用户输入的代码和测试用例代码进行组装，组装成一个完整的可以编译运行的代码
+        String fnalCode = mergetCode(requestCode,testCode);
+        //5.创建Task对象对刚才组装好的代码及逆行编译运行
+        //6.把与逆行结果构造成响应数据，并写给客户端
+    }
+
+    private String mergetCode(String requestCode, String testCode) {
+        //合并之前需要考虑这两个代码都是啥样子
+        //把testCode中的main方法内容嵌入到requestCode中
+        //1.先把requestCode中的最后一个}
+        //2.那最后一个}干掉之后，和testCode进行字符串拼接
+        //3.拼接玩毕之后，在最后再补上一个}
+        int pos = requestCode.lastIndexOf("}");
+        if(pos == -1){
+            //此时requestCode错误
+            return null;
+        }
+        //此处取得字串不包pos位置的元素
+        return requestCode.substring(0,pos);
+    }
+
+    private String readBody(HttpServletRequest req) {
+        //body的长度在header中有一个Content-Length字段中
+        //contentLength的单位就是字节
+        int contentLength= req.getContentLength();
+        byte[] buf = new byte[contentLength];
+        try(InputStream inputStream = req.getInputStream()){
+            inputStream.read(buf,0,contentLength);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new String(buf);
+    }
+}
