@@ -1,0 +1,56 @@
+package api;
+
+import com.google.gson.Gson;
+import problem.Problem;
+import problem.ProblemDAO;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class ProblemServlet extends HttpServlet {
+    private Gson gson;
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String id =  req.getParameter("id");
+        if(id == null || "".equals(id)){
+            //没有id这个参数，执行”查找全部“逻辑
+            selecAll(resp);
+        }
+        //存在id这个参数，执行”查找题目“逻辑
+        int problemId = 0;
+        selectOne(problemId,resp);
+    }
+
+    private void selecAll(HttpServletResponse resp) {
+    }
+
+    private void selectOne( int problemId,HttpServletResponse resp) throws IOException {
+        //Content-Type描述了body中的数据的类型是啥样的
+        //常见的取值
+        //html：text/html
+        //图片：image/png    image/jpg
+        //json：application/json
+        //css：tets/css
+        //javascrpt
+        resp.setContentType("application/json;charset=utf-8");
+        ProblemDAO problemDAO = new ProblemDAO();
+        Problem problem = problemDAO.selectOne(problemId);
+        //手动清理测试代码
+        problem.setTestCode("");
+        String jsonString = gson.toJson(problem);
+        resp.getWriter().write(jsonString);
+//        List<Problem> problems = problemDAO.selectAll();
+//        //把结果组织成json结构
+//        //【注意！】需要把problm中的有些字段去掉
+//        String jsonString = gson.toJson(problems);
+//        try {
+//            resp.getWriter().write(jsonString);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+}
