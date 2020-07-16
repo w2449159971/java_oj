@@ -1,3 +1,8 @@
+    package compile;
+
+public class Answer {
+    //通过error表示当前的错误类型
+    //约定error为0表示没错误，error为1便是编译出错，error为2表示运行出错
     private int error;
     //表示具体的出错原因，可能是编译错误，也可能是运行错误（异常信息）
     private String reason;
@@ -40,3 +45,4 @@
                 '}';
     }
 }
+
