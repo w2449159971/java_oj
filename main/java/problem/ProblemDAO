@@ -1,0 +1,145 @@
+package problem;
+
+import common.DBUtil;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+//数据访问层
+public class ProblemDAO {
+    //获取所有题目信息
+    public List<Problem> selectAll(){
+        //1.获取数据库连接
+        Connection connection = DBUtil.getConnection();
+        //2.拼装SQL语句
+        String sql = "select * from oj_table";
+        PreparedStatement statement = null;
+        List<Problem> result = new ArrayList<>();
+        ResultSet resultSet = null;
+        try {
+            statement = connection.prepareStatement(sql);
+            //3.执行SQL语句
+            statement.executeQuery();
+            //4.遍历结果集
+            while (resultSet.next()){
+                Problem problem = new Problem();
+                problem.setId(resultSet.getInt("id"));
+                problem.setTitle(resultSet.getString("title"));
+                problem.setLevel(resultSet.getString("level"));
+                problem.setDescription(resultSet.getString("description"));
+                problem.setTmplateCode(resultSet.getString("templateCode"));
+                problem.setTestCode(resultSet.getString("testCode"));
+                result.add(problem);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        DBUtil.close(connection,statement,resultSet);
+        //5.关闭释放资源
+        return result;
+    }
+
+    //获取指定id题目信息
+    public Problem selectOne(int id){
+        //1.建立数据库连接
+        Connection connection = DBUtil.getConnection();
+        //2.拼装SQL
+        String sql = "select * from oj_table where id = ?";
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,id);
+            //3.执行SQL
+            resultSet = statement.executeQuery();
+            if(resultSet.next()){
+                Problem problem = new Problem();
+                problem.setId(resultSet.getInt("id"));
+                problem.setTitle(resultSet.getString("title"));
+                problem.setLevel(resultSet.getString("level"));
+                //这几个字段暂时不需要
+//                problem.setTestCode(resultSet.getString("testCode"));
+                return problem;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            DBUtil.close(connection,statement,resultSet);
+        }
+        return null;
+    }
+
+    //新增一个题目到数据库中
+    public void insert(Problem problem){
+        //1.获取连接
+        Connection connection = (Connection) DBUtil.getDataSource();
+        //2.拼装SQL语句
+        String sql = "insert into oj_table value(null,?,?,?,?,?)";
+        PreparedStatement statement = null;
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.setString(1,problem.getTitle());
+            statement.setString(2,problem.getLevel());
+            statement.setString(3,problem.getDesciption());
+            statement.setString(4,problem.getTmplateCode());
+            statement.setString(5,problem.getTestCode());
+            System.out.println("insert:" + statement);
+            //3.执行SQL语句
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            //4.关闭释放相关资源
+            DBUtil.close(connection,statement,null);
+        }
+
+    }
+
+    //删除指定题目信息
+    public void delete(int id){
+        //1.获取连接
+        Connection connection = DBUtil.getConnection();
+        //2.拼装SQL
+        String sql = "delete from oj_table where id = ?";
+        PreparedStatement statement = null;
+        try {
+            statement = connection.prepareStatement(sql);
+            //3.执行SQL
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            //4.关闭并释放资源
+            DBUtil.close(connection,statement,null);
+        }
+    }
+
+    public static void main(String[] args) {
+        //1.验证一下insert操作
+//        Problem problem = new Problem();
+//        problem.setTitle("各位相加");
+//        problem.setLevel("简单");
+//        problem.setDesciption("  ");
+//        problem.setTmplateCode("");
+//        problem.setTestCode("");
+//
+//        ProblemDAO problemDAO = new ProblemDAO();
+//        problemDAO.insert(problem);
+//        System.out.println("insert ok");
+//
+        //2.测试selectAll
+//        ProblemDAO problemDAO = new ProblemDAO();
+//        List<Problem> problems = problemDAO.selectAll();
+//        System.out.println("select");
+
+        //3.测试selectOne
+        ProblemDAO problemDAO = new ProblemDAO();
+        Problem problem = problemDAO.selectOne(1);
+        System.out.println("select:" + problem);
+    }
+}
