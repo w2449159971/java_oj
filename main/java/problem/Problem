@@ -1,0 +1,71 @@
+package problem;
+
+//实体类，每个Problem对象就对应到oj——table中的一条记录
+public class Problem {
+    private int id;
+    private String title;
+    private String level;
+    private String desciption;
+    private String tmplateCode;
+    private String testCode;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public String getDesciption() {
+        return desciption;
+    }
+
+    public void setDescription(String desciption) {
+        this.desciption = desciption;
+    }
+
+    public String getTmplateCode() {
+        return tmplateCode;
+    }
+
+    public void setTmplateCode(String tmplateCode) {
+        this.tmplateCode = tmplateCode;
+    }
+
+    public String getTestCode() {
+        return testCode;
+    }
+
+    public void setTestCode(String testCode) {
+        this.testCode = testCode;
+    }
+
+    @Override
+    public String toString() {
+        return "Problem{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", leve='" + level + '\'' +
+                ", desciption='" + desciption + '\'' +
+                ", tmplateCode='" + tmplateCode + '\'' +
+                ", testCode='" + testCode + '\'' +
+                '}';
+    }
+}
